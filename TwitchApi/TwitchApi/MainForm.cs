@@ -1,95 +1,93 @@
+п»їusing System.Text;
 using System.Text.Json;
-using System.Text;
 
-namespace TwitchApi
+namespace TwitchApi;
+
+public partial class MainForm : Form
 {
-    public partial class MainForm : Form
+    public MainForm()
     {
-        public MainForm()
+        InitializeComponent();
+        uiNameTextBox.Text = ".net РїРѕРјРѕР№РєР° / РґРµР»Р°РµРј Р±РѕС‚Р° РґР»СЏ С‚РІРёС‡Р° / upd1";
+    }
+
+    // TODO: Р›СЋР±С‹Рµ РёСЃРєР»СЋС‡РµРЅРёСЏ, РЅРµ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹Рµ РјРµС‚РѕРґРѕРј "async void", РјРѕРіСѓС‚ РїСЂРёРІРµСЃС‚Рё Рє СЃР±РѕСЋ РїСЂРѕС†РµСЃСЃР°
+    private async void uiChangeNameButton_Click(object sender, EventArgs args)
+    {
+        var newName = uiNameTextBox.Text;
+
+        var accessFile = "E:\\bobgroup\\projects\\TwitchPomogator\\key.txt";
+        var lines = File.ReadAllLines(accessFile);
+
+        var clientId = "gvo8mc3xtlkg79k8gdsj1gt8ylb2ht";
+        var oauthToken = lines[1];
+        var broadcasterId = "177128531";
+        await UpdateTwitchStreamTitle(clientId, oauthToken, broadcasterId, newName);
+    }
+
+    private void MainForm_Load(object sender, EventArgs e)
+    {
+    }
+
+    private async Task UpdateTwitchStreamTitle(string clientId, string oauthToken, string broadcasterId, string newTitle)
+    {
+        using var client = new HttpClient();
+
+        // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·Р°РіРѕР»РѕРІРєРё
+        client.DefaultRequestHeaders.Add("Client-ID", clientId);
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {oauthToken.Replace("oauth:", "")}");
+
+        var url = $"https://api.twitch.tv/helix/channels?broadcaster_id={broadcasterId}";
+
+        //var bla = client.GetAsync(url);
+        //textBox1.Text = await bla.Result.Content.ReadAsStringAsync();
+        //return;
+        //{"data":[{"broadcaster_id":"177128531","broadcaster_login":"bobito217","broadcaster_name":"BOBito217","broadcaster_language":"ru","game_id":"491931","game_name":"Escape from Tarkov","title":"Escape From Tarkov / РЎС‚СЂР°РґР°РЅРёСЏ РЅРѕРІРёС‡РєР°","delay":0,"tags":["Р СѓСЃСЃРєРёР№"],"content_classification_labels":["MatureGame","ProfanityVulgarity"],"is_branded_content":false}]}
+        //                { "data":[{ "broadcaster_id":"177128531","broadcaster_login":"bobito217","broadcaster_name":"BOBito217","broadcaster_language":"ru","game_id":"1469308723","game_name":"Software and Game Development","title":".net РїРѕРјРѕР№РєР° / РґРµР»Р°РµРј Р±РѕС‚Р° РґР»СЏ С‚РІРёС‡Р° / РІСЃРµРј Р»СЋР±РІРё","delay":0,"tags":["Р СѓСЃСЃРєРёР№"],"content_classification_labels":["ProfanityVulgarity"],"is_branded_content":false}]}
+        // РўРµР»Рѕ Р·Р°РїСЂРѕСЃР° (РјРµРЅСЏРµРј С‚РѕР»СЊРєРѕ title)
+
+        //!!!РїСЂРѕРґРѕР»Р¶РёС‚СЊ СЃ С‚СЌРіР°РјРё!!!
+        string jsonBody;
+
+        if (uiTarkRadioButton.Checked)
         {
-            InitializeComponent();
-            uiNameTextBox.Text = ".net помойка / делаем бота для твича / upd1";
-        }
-
-        private async void uiChangeNameButton_Click(object sender, EventArgs e)
-        {
-            var newName = uiNameTextBox.Text;
-
-            var accessFile = "E:\\bobgroup\\projects\\TwitchPomogator\\key.txt";
-            var lines = System.IO.File.ReadAllLines(accessFile);
-
-
-            string clientId = "gvo8mc3xtlkg79k8gdsj1gt8ylb2ht";
-            string oauthToken = lines[1];
-            string broadcasterId = "177128531";
-            await UpdateTwitchStreamTitle(clientId, oauthToken, broadcasterId, newName);
-        }
-
-        async Task UpdateTwitchStreamTitle(string clientId, string oauthToken, string broadcasterId, string newTitle)
-        {
-            using (HttpClient client = new HttpClient())
+            var requestBody = new
             {
-                // Устанавливаем заголовки
-                client.DefaultRequestHeaders.Add("Client-ID", clientId);
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {oauthToken.Replace("oauth:", "")}");
+                title = "Escape From Tarkov / РЎС‚СЂР°РґР°РЅРёСЏ РЅРѕРІРёС‡РєР°",
+                //    tags = new[] { "СЂСѓСЃСЃРєРёР№", "РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ",
+                //    ".net", "СЂР°Р·СЂР°Р±РѕС‚РєР° РџРћ", "Р·РЅР°РЅРёРµ СЃРёР»Р°"
+                //},
+                game_id = "491931", // Software and Game Development
+            };
 
-                string url = $"https://api.twitch.tv/helix/channels?broadcaster_id={broadcasterId}";
+            jsonBody = JsonSerializer.Serialize(requestBody);
+        }
+        else
+        {
+            var requestBody = new
+            {
+                title = ".net РїРѕРјРѕР№РєР° / РґРµР»Р°РµРј Р±РѕС‚Р° РґР»СЏ С‚РІРёС‡Р° #2",
+                //    tags = new[] { "СЂСѓСЃСЃРєРёР№", "РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ",
+                //    ".net", "СЂР°Р·СЂР°Р±РѕС‚РєР° РџРћ", "Р·РЅР°РЅРёРµ СЃРёР»Р°"
+                //},
+                game_id = "1469308723", // Software and Game Development
+            };
 
-                //var bla = client.GetAsync(url);
-                //textBox1.Text = await bla.Result.Content.ReadAsStringAsync();
-                //return;
-                //{"data":[{"broadcaster_id":"177128531","broadcaster_login":"bobito217","broadcaster_name":"BOBito217","broadcaster_language":"ru","game_id":"491931","game_name":"Escape from Tarkov","title":"Escape From Tarkov / Страдания новичка","delay":0,"tags":["Русский"],"content_classification_labels":["MatureGame","ProfanityVulgarity"],"is_branded_content":false}]}
-                //                { "data":[{ "broadcaster_id":"177128531","broadcaster_login":"bobito217","broadcaster_name":"BOBito217","broadcaster_language":"ru","game_id":"1469308723","game_name":"Software and Game Development","title":".net помойка / делаем бота для твича / всем любви","delay":0,"tags":["Русский"],"content_classification_labels":["ProfanityVulgarity"],"is_branded_content":false}]}
-                // Тело запроса (меняем только title)
-
-                //!!!продолжить с тэгами!!!
-                string jsonBody;
-                if (uiTarkRadioButton.Checked)
-                {
-                    var requestBody = new
-                    {
-                        title = "Escape From Tarkov / Страдания новичка",
-                    //    tags = new[] { "русский", "программирование",
-                    //    ".net", "разработка ПО", "знание сила"
-                    //},
-                        game_id = "491931" // Software and Game Development
-                    };
-
-                    jsonBody = JsonSerializer.Serialize(requestBody);
-                }
-                else
-                {
-                    var requestBody = new
-                    {
-                        title = ".net помойка / делаем бота для твича #2",
-                    //    tags = new[] { "русский", "программирование",
-                    //    ".net", "разработка ПО", "знание сила"
-                    //},
-                        game_id = "1469308723" // Software and Game Development
-                    };
-
-                    jsonBody = JsonSerializer.Serialize(requestBody);
-                }
-
-                var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = await client.PatchAsync(url, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    MessageBox.Show("Название трансляции успешно изменено!", "!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    string responseContent = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show(responseContent, $"Ошибка: {response.StatusCode}", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            jsonBody = JsonSerializer.Serialize(requestBody);
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
-        {
+        using var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
+        var response = await client.PatchAsync(url, content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            MessageBox.Show("РќР°Р·РІР°РЅРёРµ С‚СЂР°РЅСЃР»СЏС†РёРё СѓСЃРїРµС€РЅРѕ РёР·РјРµРЅРµРЅРѕ!", "!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            MessageBox.Show(responseContent, $"РћС€РёР±РєР°: {response.StatusCode}", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
