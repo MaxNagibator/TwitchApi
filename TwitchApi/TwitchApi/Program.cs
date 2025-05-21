@@ -20,7 +20,7 @@ namespace TwitchApi
             Application.EnableVisualStyles();
             ApplicationConfiguration.Initialize();
 
-            Context = new ApplicationContext(new AuthForm());
+            Context = new(new AuthForm());
             Application.Run(Context);
         }
     }

@@ -7,7 +7,7 @@ namespace TwitchApi
 {
     public partial class AuthForm : Form
     {
-        private const  int ListenPort = 3012;
+        private const int ListenPort = 3012;
         private string RedirectUrl => $"http://localhost:{ListenPort}";
 
         public AuthForm()
@@ -31,8 +31,8 @@ namespace TwitchApi
             // https://dev.twitch.tv/docs/authentication/getting-tokens-oidc/#validating-an-id-token
 
             var authorizeUrl = Program.Client.GetCodeAuthLink(
-                    RedirectUrl,
-                   TwitchScope.Openid | TwitchScope.ChannelManageBroadcast
+                RedirectUrl,
+                TwitchScope.UserReadBroadcast | TwitchScope.ChannelManageBroadcast
             );
 
             Process.Start(new ProcessStartInfo(authorizeUrl) { UseShellExecute = true });
@@ -47,7 +47,6 @@ namespace TwitchApi
 
             while (true)
             {
-
                 var context = await listener.GetContextAsync();
                 var request = context.Request;
                 var code = request.QueryString["code"];

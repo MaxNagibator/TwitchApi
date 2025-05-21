@@ -30,20 +30,21 @@ namespace TwitchApi.Twitch
         {
             var query = new NameValueCollection
             {
-                {"client_id", _clientId},
-                {"redirect_uri", redirect},
-                {"response_type", "code"},
-                {"scope", scope.ToScopeString()},
+                { "client_id", _clientId },
+                { "redirect_uri", redirect },
+                { "response_type", "code" },
+                { "scope", scope.ToScopeString() },
             };
 
             return TwitchConstants.OuathAuthorize + query.ToQueryString();
         }
 
-        public async Task<bool> UpdateBroadcast(string? title = null, string? gameId = null, string[]? tags = null, string? broadcasterId = null)
+        public async Task<bool> UpdateBroadcast(string? title = null, string? gameId = null, string[]? tags = null,
+            string? broadcasterId = null)
         {
             var query = new NameValueCollection
             {
-                {"broadcaster_id", broadcasterId ?? _broadcasterId},
+                { "broadcaster_id", broadcasterId ?? _broadcasterId },
             };
 
             var requestBody = new
@@ -64,13 +65,12 @@ namespace TwitchApi.Twitch
         {
             var parameters = new Dictionary<string, string>
             {
-                { "client_id", _clientId},
-                { "client_secret", _clientSecret},
-                { "code",code},
-                { "grant_type", "authorization_code"},
-                {"redirect_uri", redirect},
+                { "client_id", _clientId },
+                { "client_secret", _clientSecret },
+                { "code", code },
+                { "grant_type", "authorization_code" },
+                { "redirect_uri", redirect },
             };
-
 
             var content = new FormUrlEncodedContent(parameters);
             var response = await _httpClient.PostAsync(TwitchConstants.OuathToken, content);
@@ -82,6 +82,37 @@ namespace TwitchApi.Twitch
             if (tokenData == null)
                 throw new Exception($"Не удалось распарсить ответ от Twitch: {json}");
 
+            UpdateToken(tokenData);
+        }
+
+        public async Task RefreshToken()
+        {
+            if (_refreshToken == null)
+                throw new InvalidOperationException("Refresh token is empty");
+
+            var parameters = new Dictionary<string, string>
+            {
+                { "client_id", _clientId },
+                { "client_secret", _clientSecret },
+                { "refresh_token", _refreshToken },
+                { "grant_type", "refresh_token" },
+            };
+
+            var content = new FormUrlEncodedContent(parameters);
+            var response = await _httpClient.PostAsync(TwitchConstants.OuathToken, content);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var tokenData = JsonSerializer.Deserialize<TokenResponse>(json);
+
+            if (tokenData == null)
+                throw new Exception($"Не удалось распарсить ответ от Twitch: {json}");
+
+            UpdateToken(tokenData);
+        }
+
+        private void UpdateToken(TokenResponse tokenData)
+        {
             _token = tokenData.AccessToken;
             _refreshToken = tokenData.RefreshToken;
 

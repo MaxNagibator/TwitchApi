@@ -1,26 +1,13 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace TwitchApi.Twitch.Responses
-{
-    public class TokenResponse
-    {
-        [JsonPropertyName("access_token")]
-        public string AccessToken { get; set; }
+namespace TwitchApi.Twitch.Responses;
 
-        [JsonPropertyName("expires_in")]
-        public int ExpiresIn { get; set; }
+public record TokenResponse(
+    [property: JsonPropertyName("access_token")] string AccessToken,
+    [property: JsonPropertyName("expires_in")] int ExpiresIn,
+    [property: JsonPropertyName("id_token")] string? IdToken,
+    [property: JsonPropertyName("refresh_token")] string RefreshToken,
+    [property: JsonPropertyName("scope")] List<string> Scope,
+    [property: JsonPropertyName("token_type")] string TokenType
+);
 
-        [JsonPropertyName("id_token")]
-        public string? IdToken { get; set; }
-
-        [JsonPropertyName("refresh_token")]
-        public string RefreshToken { get; set; }
-
-        [JsonPropertyName("scope")]
-        public List<string> Scope { get; set; }
-
-        [JsonPropertyName("token_type")]
-        public string TokenType { get; set; }
-    }
-
-}
