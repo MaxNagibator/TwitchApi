@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="TwitchApi.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ClientId" Type="System.String" Scope="User">
+      <Value Profile="(Default)">cw72jc19b3brkspunjqkvzkgvsa5kh</Value>
+    </Setting>
+    <Setting Name="ClientSecret" Type="System.String" Scope="User">
+      <Value Profile="(Default)">66dgvxkr0qv1oil0m4hx3sgog8m14p</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

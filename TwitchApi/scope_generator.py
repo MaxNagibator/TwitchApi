@@ -1,0 +1,77 @@
+scopes = [
+    "openid",
+    "channel:bot",
+    "channel:manage:broadcast",
+    "channel:manage:extensions",
+    "channel:read:goals",
+    "channel:read:guest_star",
+    "channel:manage:guest_star",
+    "channel:read:hype_train",
+    "channel:manage:moderators",
+    "channel:read:polls",
+    "channel:manage:polls",
+    "channel:read:predictions",
+    "channel:manage:predictions",
+    "channel:manage:raids",
+    "channel:read:redemptions",
+    "channel:manage:redemptions",
+    "channel:manage:schedule",
+    "channel:read:stream_key",
+    "channel:read:subscriptions",
+    "channel:manage:videos",
+    "channel:read:vips",
+    "channel:manage:vips",
+    "channel:moderate",
+    "moderation:read",
+    "moderator:manage:announcements",
+    "moderator:manage:automod",
+    "moderator:read:automod_settings",
+    "moderator:manage:automod_settings",
+    "moderator:read:banned_users",
+    "moderator:manage:banned_users",
+    "moderator:read:blocked_terms",
+    "moderator:read:chat_messages",
+    "moderator:manage:blocked_terms",
+    "moderator:manage:chat_messages",
+    "moderator:read:chat_settings",
+    "moderator:manage:chat_settings",
+    "moderator:read:chatters",
+    "moderator:read:followers",
+    "moderator:read:guest_star",
+    "moderator:manage:guest_star",
+    "moderator:read:moderators",
+    "moderator:read:shield_mode",
+    "moderator:manage:shield_mode",
+    "moderator:read:shoutouts",
+    "moderator:manage:shoutouts",
+    "moderator:read:suspicious_users",
+    "moderator:read:unban_requests",
+    "moderator:manage:unban_requests",
+    "moderator:read:vips",
+    "moderator:read:warnings",
+    "moderator:manage:warnings",
+    "user:edit:broadcast",
+    "user:read:blocked_users",
+    "user:manage:blocked_users",
+    "user:read:broadcast",
+    "user:read:chat",
+    "user:manage:chat_color",
+    "user:read:email",
+    "user:read:follows",
+    "user:read:subscriptions",
+    "user:read:whispers",
+    "user:manage:whispers",
+    "user:write:chat",
+]
+
+def to_enum_name(scope):
+    parts = scope.replace(":", "_").replace(".", "_").split("_")
+    return ''.join(p.capitalize() for p in parts)
+
+enum_lines = []
+for i, scope in enumerate(scopes):
+    enum_name = to_enum_name(scope)
+    enum_lines.append(f'    [TwitchScope("{scope}")]\n    {enum_name} = 1L << {i},')
+
+enum_result = "public enum TwitchScope : long\n{\n" + "\n\n".join(enum_lines) + "\n}"
+print(enum_result)
