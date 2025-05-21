@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,8 +15,8 @@ public partial class MainForm : Form
         InitializeComponent();
         uiNameTextBox.Text = ".net помойка / делаем бота для твича / upd1";
 
-        //var json = File.ReadAllText(@"C:\Sources\TheVSAKeeper\TwitchApi\settings.json");
-        var json = File.ReadAllText(@"E:\bobgroup\projects\TwitchPomogator\settings.json");
+        var json = File.ReadAllText(@"C:\Sources\TheVSAKeeper\TwitchApi\settings.json");
+        //var json = File.ReadAllText(@"E:\bobgroup\projects\TwitchPomogator\settings.json");
 
         var settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new NullReferenceException("Can't read settings");
         _settings = settings.TwitchAuth;
@@ -44,9 +45,10 @@ public partial class MainForm : Form
         MessageBox.Show("Токен успешно сохранен!");
     }
 
-    private void uiAuthButton_Click(object sender, EventArgs e)
+    private async void uiAuthButton_Click(object sender, EventArgs e)
     {
-        StartOAuthFlow(_settings.ClientId);
+        var authorizationCode = await StartOAuthFlow(_settings.ClientId);
+        await ExchangeCodeForToken(_settings.ClientId, _settings.ClientSecret, authorizationCode);
     }
 
     private async void uiGetBroadcasterButton_Click(object sender, EventArgs e)
@@ -205,7 +207,7 @@ public partial class MainForm : Form
         return accessToken;
     }
 
-    private void StartOAuthFlow(string clientId)
+    private async Task<string> StartOAuthFlow(string clientId)
     {
         var scope = "channel:manage:broadcast user:read:broadcast";
 
@@ -215,7 +217,12 @@ public partial class MainForm : Form
                       + $"&redirect_uri=http://localhost:8080"
                       + $"&scope={scope}";
 
+        var codeTask = StartLocalHttpServerAsync();
+
         Process.Start(new ProcessStartInfo { FileName = authUrl, UseShellExecute = true });
+
+        var authorizationCode = await codeTask;
+        return authorizationCode;
     }
 
     private async Task<string> GetBroadcasterIdAsync(string clientId, string accessToken)
@@ -233,7 +240,7 @@ public partial class MainForm : Form
         var response = await client.GetAsync("https://api.twitch.tv/helix/users");
         var content = await response.Content.ReadAsStringAsync();
 
-        if (!response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode == false)
         {
             throw new($"Ошибка получения данных: {content}");
         }
@@ -246,6 +253,55 @@ public partial class MainForm : Form
         }
 
         return userResponse.Data[0];
+    }
+
+    private async Task<string> StartLocalHttpServerAsync()
+    {
+        using var listener = new HttpListener();
+        listener.Prefixes.Add("http://localhost:8080/");
+        listener.Start();
+
+        try
+        {
+            var context = await listener.GetContextAsync();
+            var request = context.Request;
+            var response = context.Response;
+
+            var code = request.QueryString["code"];
+            var error = request.QueryString["error"];
+
+            if (string.IsNullOrEmpty(error) == false)
+            {
+                MessageBox.Show($"Ошибка авторизации: {error}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(code))
+            {
+                MessageBox.Show("Не удалось получить authorization_code.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return string.Empty;
+            }
+
+            var responseString =
+                """
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head><meta charset="UTF-8"</head>
+                ><body>Вы можете закрыть это окно.</body>
+                </html>
+                """;
+
+            var buffer = Encoding.UTF8.GetBytes(responseString);
+            response.ContentLength64 = buffer.Length;
+            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+            response.Close();
+
+            return code;
+        }
+        finally
+        {
+            listener.Stop();
+        }
     }
 }
 
