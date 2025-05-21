@@ -1,41 +1,69 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace TwitchApi;
 
 public partial class MainForm : Form
 {
+    private readonly TwitchAuth _settings;
+
     public MainForm()
     {
         InitializeComponent();
         uiNameTextBox.Text = ".net помойка / делаем бота для твича / upd1";
-    }
 
-    // TODO: Любые исключения, не обработанные методом "async void", могут привести к сбою процесса
-    private async void uiChangeNameButton_Click(object sender, EventArgs args)
-    {
-        var newName = uiNameTextBox.Text;
+        //var json = File.ReadAllText(@"C:\Sources\TheVSAKeeper\TwitchApi\settings.json");
+        var json = File.ReadAllText(@"E:\bobgroup\projects\TwitchPomogator\settings.json");
 
-        var accessFile = "E:\\bobgroup\\projects\\TwitchPomogator\\key.txt";
-        var lines = File.ReadAllLines(accessFile);
-
-        var clientId = "gvo8mc3xtlkg79k8gdsj1gt8ylb2ht";
-        var oauthToken = lines[1];
-        var broadcasterId = "177128531";
-        await UpdateTwitchStreamTitle(clientId, oauthToken, broadcasterId, newName);
+        var settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new NullReferenceException("Can't read settings");
+        _settings = settings.TwitchAuth;
     }
 
     private void MainForm_Load(object sender, EventArgs e)
     {
     }
 
-    private async Task UpdateTwitchStreamTitle(string clientId, string oauthToken, string broadcasterId, string newTitle)
+    // TODO: Любые исключения, не обработанные методом "async void", могут привести к сбою процесса
+    private async void uiChangeNameButton_Click(object sender, EventArgs args)
     {
-        using var client = new HttpClient();
+        // var accessFile = "E:\\bobgroup\\projects\\TwitchPomogator\\key.txt";
+        // var lines = File.ReadAllLines(accessFile);
+        // var oauthToken = lines[1];
 
-        // Устанавливаем заголовки
+        await UpdateTwitchStreamTitle(_settings.ClientId, _settings.ClientSecret);
+    }
+
+    private async void uiSubmitCodeButton_Click(object sender, EventArgs e)
+    {
+        var authorizationCode = uiCodeTextBox.Text;
+        var oauthToken = await ExchangeCodeForToken(_settings.ClientId, _settings.ClientSecret, authorizationCode);
+
+        await File.WriteAllTextAsync("token.txt", oauthToken);
+        MessageBox.Show("Токен успешно сохранен!");
+    }
+
+    private void uiAuthButton_Click(object sender, EventArgs e)
+    {
+        StartOAuthFlow(_settings.ClientId);
+    }
+
+    private async void uiGetBroadcasterButton_Click(object sender, EventArgs e)
+    {
+        var token = await GetValidToken(_settings.ClientId, _settings.ClientSecret);
+        var twitchUser = await GetBroadcasterAsync(_settings.ClientId, token);
+        uiInfoTextBox.Text += twitchUser;
+    }
+
+    private async Task UpdateTwitchStreamTitle(string clientId, string clientSecret)
+    {
+        var oauthToken = await GetValidToken(clientId, clientSecret);
+        var broadcasterId = await File.ReadAllTextAsync("broadcaster_id.txt");
+
+        using var client = new HttpClient();
         client.DefaultRequestHeaders.Add("Client-ID", clientId);
-        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {oauthToken.Replace("oauth:", "")}");
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {oauthToken}");
 
         var url = $"https://api.twitch.tv/helix/channels?broadcaster_id={broadcasterId}";
 
@@ -90,4 +118,186 @@ public partial class MainForm : Form
             MessageBox.Show(responseContent, $"Ошибка: {response.StatusCode}", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
+
+    private async Task<bool> IsTokenValid(string token)
+    {
+        using var client = new HttpClient();
+        var validateUrl = "https://id.twitch.tv/oauth2/validate ";
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        var response = await client.GetAsync(validateUrl);
+        return response.IsSuccessStatusCode;
+    }
+
+    private async Task<string> RefreshToken(string clientId, string clientSecret)
+    {
+        var refreshToken = await File.ReadAllTextAsync("refresh_token.txt");
+
+        using var client = new HttpClient();
+        var tokenUrl = "https://id.twitch.tv/oauth2/token";
+
+        var formData = new Dictionary<string, string>
+        {
+            { "client_id", clientId },
+            { "client_secret", clientSecret },
+            { "refresh_token", refreshToken },
+            { "grant_type", "refresh_token" },
+        };
+
+        var response = await client.PostAsync(tokenUrl, new FormUrlEncodedContent(formData));
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+        var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+
+        await File.WriteAllTextAsync("token.txt", tokenResponse.AccessToken);
+        await File.WriteAllTextAsync("refresh_token.txt", tokenResponse.RefreshToken);
+
+        return tokenResponse.AccessToken;
+    }
+
+    private async Task<string> GetValidToken(string clientId, string clientSecret)
+    {
+        var token = await File.ReadAllTextAsync("token.txt");
+
+        if (await IsTokenValid(token))
+        {
+            return token;
+        }
+
+        return await RefreshToken(clientId, clientSecret);
+    }
+
+    private async Task<string> ExchangeCodeForToken(string clientId, string clientSecret, string authorizationCode)
+    {
+        string accessToken;
+
+        if (string.IsNullOrWhiteSpace(authorizationCode))
+        {
+            accessToken = await GetValidToken(clientId, clientSecret);
+        }
+        else
+        {
+            using var client = new HttpClient();
+            var tokenUrl = "https://id.twitch.tv/oauth2/token";
+
+            var formData = new Dictionary<string, string>
+            {
+                { "client_id", clientId },
+                { "client_secret", clientSecret },
+                { "code", authorizationCode },
+                { "grant_type", "authorization_code" },
+                { "redirect_uri", "http://localhost:8080" },
+            };
+
+            var response = await client.PostAsync(tokenUrl, new FormUrlEncodedContent(formData));
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+            var refreshToken = tokenResponse.RefreshToken;
+            accessToken = tokenResponse.AccessToken;
+
+            await File.WriteAllTextAsync("token.txt", accessToken);
+            await File.WriteAllTextAsync("refresh_token.txt", refreshToken);
+        }
+
+        var broadcasterId = await GetBroadcasterIdAsync(clientId, accessToken);
+        await File.WriteAllTextAsync("broadcaster_id.txt", broadcasterId);
+
+        MessageBox.Show($"Токен и ID стримера ({broadcasterId}) сохранены!", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        return accessToken;
+    }
+
+    private void StartOAuthFlow(string clientId)
+    {
+        var scope = "channel:manage:broadcast user:read:broadcast";
+
+        var authUrl = $"https://id.twitch.tv/oauth2/authorize"
+                      + $"?response_type=code"
+                      + $"&client_id={clientId}"
+                      + $"&redirect_uri=http://localhost:8080"
+                      + $"&scope={scope}";
+
+        Process.Start(new ProcessStartInfo { FileName = authUrl, UseShellExecute = true });
+    }
+
+    private async Task<string> GetBroadcasterIdAsync(string clientId, string accessToken)
+    {
+        var broadcaster = await GetBroadcasterAsync(clientId, accessToken);
+        return broadcaster.Id;
+    }
+
+    private async Task<TwitchUser> GetBroadcasterAsync(string clientId, string accessToken)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("Client-ID", clientId);
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+        var response = await client.GetAsync("https://api.twitch.tv/helix/users");
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new($"Ошибка получения данных: {content}");
+        }
+
+        var userResponse = JsonSerializer.Deserialize<TwitchUserResponse>(content);
+
+        if (userResponse?.Data == null || userResponse.Data.Count == 0)
+        {
+            throw new("Пользователь не найден.");
+        }
+
+        return userResponse.Data[0];
+    }
 }
+
+public record TwitchUser(
+    [property: JsonPropertyName("id")]
+    string Id,
+    [property: JsonPropertyName("login")]
+    string Login,
+    [property: JsonPropertyName("display_name")]
+    string DisplayName,
+    [property: JsonPropertyName("type")]
+    string Type,
+    [property: JsonPropertyName("broadcaster_type")]
+    string BroadcasterType,
+    [property: JsonPropertyName("description")]
+    string Description,
+    [property: JsonPropertyName("profile_image_url")]
+    string ProfileImageUrl,
+    [property: JsonPropertyName("offline_image_url")]
+    string OfflineImageUrl,
+    [property: JsonPropertyName("view_count")]
+    int ViewCount,
+    [property: JsonPropertyName("created_at")]
+    DateTime CreatedAt
+);
+
+public record TwitchUserResponse(
+    [property: JsonPropertyName("data")]
+    List<TwitchUser> Data
+);
+
+public record TokenResponse(
+    [property: JsonPropertyName("access_token")]
+    string AccessToken,
+    [property: JsonPropertyName("expires_in")]
+    int ExpiresIn,
+    [property: JsonPropertyName("refresh_token")]
+    string RefreshToken,
+    [property: JsonPropertyName("scope")]
+    List<string> Scope,
+    [property: JsonPropertyName("token_type")]
+    string TokenType
+);
+
+public record Settings(
+    [property: JsonPropertyName("TwitchAuth")]
+    TwitchAuth TwitchAuth
+);
+
+public record TwitchAuth(
+    [property: JsonPropertyName("ClientId")]
+    string ClientId,
+    [property: JsonPropertyName("ClientSecret")]
+    string ClientSecret
+);
