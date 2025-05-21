@@ -55,7 +55,7 @@
             // 
             gameTextBot.Location = new Point(93, 52);
             gameTextBot.Name = "gameTextBot";
-            gameTextBot.PlaceholderText = "Название стрима";
+            gameTextBot.PlaceholderText = "ID игры";
             gameTextBot.Size = new Size(200, 23);
             gameTextBot.TabIndex = 2;
             // 

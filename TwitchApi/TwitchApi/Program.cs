@@ -1,4 +1,4 @@
-using TwitchApi.Twitch;
+﻿using TwitchApi.Twitch;
 
 namespace TwitchApi
 {
@@ -6,7 +6,8 @@ namespace TwitchApi
     {
         public static readonly TwitchApiClient Client = new(
             Properties.Settings.Default.ClientId,
-            Properties.Settings.Default.ClientSecret
+            Properties.Settings.Default.ClientSecret,
+            new FileStorage("credentials.json")
         );
 
         public static ApplicationContext Context { get; set; } = null!;

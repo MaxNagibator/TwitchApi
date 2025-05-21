@@ -1,4 +1,4 @@
-namespace TwitchApi
+﻿namespace TwitchApi
 {
     public partial class MainForm : Form
     {

@@ -18,18 +18,13 @@ namespace TwitchApi
         private async void authButton_Click(object sender, EventArgs e)
         {
             var code = await GetAuthCode();
-            await Program.Client.UpdateTokenByCode(code, RedirectUrl);
+            await Program.Client.RefreshTokenByCode(code, RedirectUrl);
 
-            Program.Context.MainForm = new MainForm();
-            Program.Context.MainForm.Show();
-            Close();
+            ShowMainForm();
         }
 
         private async Task<string> GetAuthCode()
         {
-            // Openid нужен чтобы сразу получить id текущего юзера из id_token (это jwt)
-            // https://dev.twitch.tv/docs/authentication/getting-tokens-oidc/#validating-an-id-token
-
             var authorizeUrl = Program.Client.GetCodeAuthLink(
                 RedirectUrl,
                 TwitchScope.UserReadBroadcast | TwitchScope.ChannelManageBroadcast
@@ -75,6 +70,23 @@ namespace TwitchApi
 
                 return code;
             }
+        }
+
+        private async void AuthForm_Load(object sender, EventArgs e)
+        {
+            var tokenIsValid = await Program.Client.IsTokenValid();
+
+            if (!tokenIsValid)
+                return;
+
+            ShowMainForm();
+        }
+
+        private void ShowMainForm()
+        {
+            Program.Context.MainForm = new MainForm();
+            Program.Context.MainForm.Show();
+            Close();
         }
     }
 }
