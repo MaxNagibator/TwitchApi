@@ -178,3 +178,4 @@ FakesAssemblies/
 
 #rider
 .idea
+/TwitchApi/TemplateEngineHost/vs

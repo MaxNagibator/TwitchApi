@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchApi", "TwitchApi\TwitchApi.csproj", "{14DFC451-4B7E-427A-9FA9-DC37806EEBF3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchAPi.Client", "TwitchAPi.Client\TwitchAPi.Client.csproj", "{BB064E88-9644-4E8F-9558-D6072DC09C91}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{14DFC451-4B7E-427A-9FA9-DC37806EEBF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14DFC451-4B7E-427A-9FA9-DC37806EEBF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14DFC451-4B7E-427A-9FA9-DC37806EEBF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB064E88-9644-4E8F-9558-D6072DC09C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB064E88-9644-4E8F-9558-D6072DC09C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB064E88-9644-4E8F-9558-D6072DC09C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB064E88-9644-4E8F-9558-D6072DC09C91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

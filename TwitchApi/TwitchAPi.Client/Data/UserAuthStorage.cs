@@ -1,28 +1,31 @@
 ﻿using System.Text.Json;
 
-namespace TwitchApi.Twitch;
+namespace TwitchAPi.Client.Data;
 
-public class AuthStorage
+public class UserAuthStorage
 {
     private readonly string _filename;
+    private readonly static UserTwitchAuth _empty = new(null, null);
 
-    public AuthStorage(string filename)
+    public UserAuthStorage(string filename)
     {
         _filename = filename;
     }
 
-    public TwitchAuth Load()
+    public UserTwitchAuth Load()
     {
         if (!File.Exists(_filename))
         {
-            return new TwitchAuth(null, null, null);
+            return _empty;
         }
 
         var json = File.ReadAllText(_filename);
-        return JsonSerializer.Deserialize<TwitchAuth>(json) ?? new TwitchAuth(null, null, null);
+        var userAuth = JsonSerializer.Deserialize<UserTwitchAuth>(json);
+
+        return userAuth ?? _empty;
     }
 
-    public void Save(TwitchAuth auth)
+    public void Save(UserTwitchAuth auth)
     {
         var json = JsonSerializer.Serialize(auth, new JsonSerializerOptions
         {
