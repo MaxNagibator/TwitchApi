@@ -1,4 +1,5 @@
-﻿using System.IO.Pipes;
+﻿using System.Diagnostics;
+using System.IO.Pipes;
 
 namespace TwitchApi.Services;
 
@@ -6,16 +7,17 @@ internal class NamedPipeService
 {
     private const string PipeName = "TwitchApiInstancePipe";
 
-    public void Start(Action<string[]> onMessage)
+    public async Task Start(Action<string[]> onMessage, CancellationToken cancellationToken)
     {
-        new Thread(() =>
+        try
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                using var server = new NamedPipeServerStream(PipeName, PipeDirection.In);
-                server.WaitForConnection();
+                await using var server = new NamedPipeServerStream(PipeName, PipeDirection.In);
+                await server.WaitForConnectionAsync(cancellationToken);
+                
                 using var reader = new StreamReader(server);
-                var line = reader.ReadLine();
+                var line = await reader.ReadLineAsync(cancellationToken);
 
                 if (string.IsNullOrEmpty(line))
                 {
@@ -25,23 +27,28 @@ internal class NamedPipeService
                 var args = line.Split('|');
                 onMessage?.Invoke(args);
             }
-        })
+        }
+        catch (Exception e)
         {
-            IsBackground = true
-        }.Start();
+            Debug.WriteLine($"Pipe error: {e.Message}");
+        }
     }
 
-    public void Send(string[] args)
+    public async void Send(string[] args)
     {
         try
         {
-            using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
-            client.Connect(500);
-            using var writer = new StreamWriter(client) { AutoFlush = true };
-            writer.WriteLine(string.Join("|", args));
+            await using var client = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+            await client.ConnectAsync(500);
+
+            await using var writer = new StreamWriter(client);
+            writer.AutoFlush = true;
+
+            await writer.WriteLineAsync(string.Join("|", args));
         }
-        catch
+        catch (Exception e)
         {
+            Debug.WriteLine($"Pipe error: {e.Message}");
         }
     }
 }

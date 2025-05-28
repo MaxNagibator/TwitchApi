@@ -1,24 +1,42 @@
 name: Publish and Release 
 
 on:
-  push:
-    branches: [ "master" ]
+  release:
+    types: [ published ]
   workflow_dispatch:
-
+    inputs:
+      tag:
+        description: 'Select tag of release'
+        required: true
+        type: string
+        
+permissions:
+  contents: write
+  
 jobs:
   build-windows:
-    runs-on: windows-latest
-    name: Build Windows
+    runs-on: windows-2022
     env:
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      PROJECT_PATH: ./TwitchApi/TwitchApi/TwitchApi.csproj
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Determine release tag
+        id: determine-tag
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "${{ github.event.inputs.tag }}"
+          } else {
+            $tag = "${{ github.ref_name }}"
+          }
+          echo "TAG=$tag" >> $env:GITHUB_ENV
     
       - uses: actions/cache@v3
         with:
@@ -26,25 +44,30 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-      
-      - name: Set project path
-        id: vars
-        run: echo "PROJECT_PATH=./TwitchApi/TwitchApi/TwitchApi.csproj" >> $env:GITHUB_ENV
 
       - name: Restore dependencies
         run: dotnet restore ${{ env.PROJECT_PATH }}
 
-      - name: Publish as single file (win-x64)
+      - name: Publish as single file
         run: dotnet publish ${{ env.PROJECT_PATH }} -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
 
       - name: Archive published app
         run: Compress-Archive -Path publish\* -DestinationPath "twitchapi-win-x64.zip"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: Release v${{ github.run_number }}
-          files: twitchapi-win-x64.zip
+      - name: Create GitHub Release if not exists
+        run: |
+          $ErrorActionPreference = "SilentlyContinue"
+          $release = gh release view $env:TAG
+          if (-not $release) {
+            Write-Host "Creating release $env:TAG..."
+            gh release create $env:TAG --title "$env:TAG" --notes "Auto-generated release"
+          } else {
+            Write-Host "Release $env:TAG already exists."
+          }
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Upload release asset
+        run: gh release upload $env:TAG twitchapi-win-x64.zip --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}

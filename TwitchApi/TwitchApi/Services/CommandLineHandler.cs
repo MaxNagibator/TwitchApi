@@ -1,5 +1,5 @@
 ﻿using System.Collections.Specialized;
-using TwitchAPi.Client.Common;
+using TwitchApi.Common;
 
 namespace TwitchApi.Services;
 
@@ -52,9 +52,6 @@ internal class CommandLineHandler
             return;
         }
 
-        _form.Invoke(() =>
-        {
-            _form.OnCodeRecevied(code);
-        });
+        _form.OnCodeRecevied(code);
     }
 }
