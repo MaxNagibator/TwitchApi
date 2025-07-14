@@ -1,7 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.Web;
 
-namespace TwitchAPi.Client.Common;
+namespace TwitchApi.Client.Common;
 
 internal static class HttpExtensions
 {

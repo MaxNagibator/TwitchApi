@@ -1,9 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Text.Json;
-using TwitchAPi.Client.Common;
-using TwitchAPi.Client.Responses;
+using TwitchApi.Client.Common;
+using TwitchApi.Client.Responses;
 
-namespace TwitchAPi.Client.Services;
+namespace TwitchApi.Client.Services;
 
 public class AuthService
 {

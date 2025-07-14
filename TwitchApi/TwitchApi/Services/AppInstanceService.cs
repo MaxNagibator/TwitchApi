@@ -5,8 +5,8 @@ namespace TwitchApi.Services;
 
 internal class AppInstanceService : BackgroundService
 {
-    private const string UriScheme = "twitchapi";
-    private const string UriKey = "URL:twitchapi Protocol";
+    private const string UriScheme = "TwitchApi";
+    private const string UriKey = "URL:TwitchApi Protocol";
     
     private readonly NamedPipeService _pipe;
     private readonly CommandLineHandler _handler;

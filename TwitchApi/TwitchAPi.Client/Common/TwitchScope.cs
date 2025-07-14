@@ -1,4 +1,4 @@
-﻿namespace TwitchAPi.Client.Common;
+﻿namespace TwitchApi.Client.Common;
 
 [Flags]
 public enum TwitchScope : long

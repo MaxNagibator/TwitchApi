@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using TwitchAPi.Client.Responses;
+using TwitchApi.Client.Responses;
 
-namespace TwitchAPi.Client.Services;
+namespace TwitchApi.Client.Services;
 
 public class UserService
 {

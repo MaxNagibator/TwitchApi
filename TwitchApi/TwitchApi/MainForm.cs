@@ -1,23 +1,23 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using TwitchApi.Profile;
-using TwitchAPi.Client;
-using TwitchAPi.Client.Common;
+using TwitchApi.Client;
+using TwitchApi.Client.Common;
 
 namespace TwitchApi
 {
     public partial class MainForm : Form
     {
-        private readonly TwitchApiClient _twitchApiClient;
+        private readonly TwitchApiClient _TwitchApiClient;
         private readonly TwitchProfileStorage _profileStorage;
 
         private BindingList<TwitchProfile> _profiles;
 
-        public MainForm(TwitchApiClient twitchApiClient, TwitchProfileStorage profileStorage)
+        public MainForm(TwitchApiClient TwitchApiClient, TwitchProfileStorage profileStorage)
         {
             InitializeComponent();
 
-            _twitchApiClient = twitchApiClient;
+            _TwitchApiClient = TwitchApiClient;
             _profileStorage = profileStorage;
 
             _profiles = new BindingList<TwitchProfile>(profileStorage.LoadProfiles());
@@ -27,11 +27,11 @@ namespace TwitchApi
         private async void MainForm_Load(object sender, EventArgs e)
         {
             updateButton.Enabled = false;
-            var tokenIsValid = await _twitchApiClient.Auth.IsTokenValid();
+            var tokenIsValid = await _TwitchApiClient.Auth.IsTokenValid();
 
             if (!tokenIsValid)
             {
-                var authorizeUrl = _twitchApiClient.Auth.GetCodeAuthLink(
+                var authorizeUrl = _TwitchApiClient.Auth.GetCodeAuthLink(
                     TwitchScope.UserReadBroadcast | TwitchScope.ChannelManageBroadcast
                 );
 
@@ -45,7 +45,7 @@ namespace TwitchApi
 
         public async void OnCodeRecevied(string code)
         {
-            await _twitchApiClient.Auth.RefreshTokenByCode(code);
+            await _TwitchApiClient.Auth.RefreshTokenByCode(code);
 
             Invoke(Activate);
             InitializeUser();
@@ -53,12 +53,12 @@ namespace TwitchApi
 
         private async void InitializeUser()
         {
-            await _twitchApiClient.InitializeUser();
+            await _TwitchApiClient.InitializeUser();
 
             Invoke(() =>
             {
                 updateButton.Enabled = true;
-                uiUserLabel.Text = _twitchApiClient.UserName;
+                uiUserLabel.Text = _TwitchApiClient.UserName;
             });
         }
 
@@ -92,7 +92,7 @@ namespace TwitchApi
 
         private async void updateButton_Click(object sender, EventArgs e)
         {
-            var updateResult = await _twitchApiClient.Channel.UpdateBroadcast(uiTitleTextBox.Text, uiCategoryIdTextBox.Text);
+            var updateResult = await _TwitchApiClient.Channel.UpdateBroadcast(uiTitleTextBox.Text, uiCategoryIdTextBox.Text);
 
             Invoke(() =>
             {

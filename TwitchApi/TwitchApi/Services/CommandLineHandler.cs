@@ -28,7 +28,7 @@ internal class CommandLineHandler
         try
         {
             var uri = new Uri(args[0]);
-            if (uri.Scheme != "twitchapi")
+            if (uri.Scheme != "TwitchApi")
                 return;
 
             string key = uri.Host.ToLower();

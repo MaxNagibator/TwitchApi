@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using TwitchApi.Profile;
-using TwitchAPi.Client.Data;
-using TwitchAPi.Client;
+using TwitchApi.Client.Data;
+using TwitchApi.Client;
 using TwitchApi.Common;
 using TwitchApi.Services;
 

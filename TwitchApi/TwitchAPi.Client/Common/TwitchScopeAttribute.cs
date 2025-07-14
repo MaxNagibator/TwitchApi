@@ -1,4 +1,4 @@
-﻿namespace TwitchAPi.Client.Common;
+﻿namespace TwitchApi.Client.Common;
 
 [AttributeUsage(AttributeTargets.Field)]
 public class TwitchScopeAttribute : Attribute

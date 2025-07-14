@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace TwitchAPi.Client.Responses;
+namespace TwitchApi.Client.Responses;
 
 public record TwitchUser(
     [property: JsonPropertyName("id")]

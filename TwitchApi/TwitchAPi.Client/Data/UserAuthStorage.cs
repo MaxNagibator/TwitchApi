@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace TwitchAPi.Client.Data;
+namespace TwitchApi.Client.Data;
 
 public class UserAuthStorage
 {

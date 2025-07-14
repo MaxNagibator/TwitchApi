@@ -1,4 +1,4 @@
-﻿namespace TwitchAPi.Client;
+﻿namespace TwitchApi.Client;
 
 public static class TwitchConstants
 {

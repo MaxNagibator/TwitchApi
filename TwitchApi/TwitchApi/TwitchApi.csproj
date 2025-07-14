@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TwitchAPi.Client\TwitchAPi.Client.csproj" />
+    <ProjectReference Include="..\TwitchApi.Client\TwitchApi.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Text.Json;
 using System.Text;
-using TwitchAPi.Client.Common;
+using TwitchApi.Client.Common;
 
-namespace TwitchAPi.Client.Services;
+namespace TwitchApi.Client.Services;
 
 public class ChannelService
 {

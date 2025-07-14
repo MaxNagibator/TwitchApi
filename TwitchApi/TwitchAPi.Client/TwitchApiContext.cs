@@ -1,7 +1,7 @@
-﻿using TwitchAPi.Client.Data;
-using TwitchAPi.Client.Responses;
+﻿using TwitchApi.Client.Data;
+using TwitchApi.Client.Responses;
 
-namespace TwitchAPi.Client;
+namespace TwitchApi.Client;
 
 public class TwitchApiContext
 {
