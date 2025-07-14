@@ -6,6 +6,7 @@ namespace TwitchApi.Client;
 public class TwitchApiClient
 {
     private readonly TwitchApiContext _context;
+    public TwitchApiContext Context => _context;
 
     public AuthService Auth { get; }
     public UserService User { get; }

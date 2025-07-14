@@ -14,6 +14,8 @@ public class UserAuthStorage
 
     public UserTwitchAuth Load()
     {
+        //return _empty;
+
         if (!File.Exists(_filename))
         {
             return _empty;

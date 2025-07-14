@@ -28,9 +28,9 @@ public class ChannelService
 
         var requestBody = new
         {
-            title,
+            title = title,
             game_id = gameId,
-            tags,
+            tags = tags,
         };
 
         var jsonBody = JsonSerializer.Serialize(requestBody);

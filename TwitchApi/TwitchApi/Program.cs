@@ -8,6 +8,7 @@ using TwitchApi.Client;
 using TwitchApi.Common;
 using TwitchApi.Services;
 
+
 namespace TwitchApi
 {
     internal static class Program
@@ -18,6 +19,8 @@ namespace TwitchApi
         [STAThread]
         private static void Main(string[] args)
         {
+
+
             Application.EnableVisualStyles();
             ApplicationConfiguration.Initialize();
 
