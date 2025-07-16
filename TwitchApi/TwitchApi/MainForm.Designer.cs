@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             uiTitleTextBox = new TextBox();
             updateButton = new Button();
             uiCategoryIdTextBox = new TextBox();
@@ -43,15 +44,15 @@
             uiTitleTextBox.Location = new Point(12, 43);
             uiTitleTextBox.Name = "uiTitleTextBox";
             uiTitleTextBox.PlaceholderText = "Название стрима";
-            uiTitleTextBox.Size = new Size(200, 23);
+            uiTitleTextBox.Size = new Size(772, 23);
             uiTitleTextBox.TabIndex = 0;
             // 
             // updateButton
             // 
             updateButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            updateButton.Location = new Point(12, 216);
+            updateButton.Location = new Point(12, 248);
             updateButton.Name = "updateButton";
-            updateButton.Size = new Size(200, 50);
+            updateButton.Size = new Size(772, 50);
             updateButton.TabIndex = 1;
             updateButton.Text = "Обновить";
             updateButton.UseVisualStyleBackColor = true;
@@ -63,7 +64,7 @@
             uiCategoryIdTextBox.Location = new Point(12, 72);
             uiCategoryIdTextBox.Name = "uiCategoryIdTextBox";
             uiCategoryIdTextBox.PlaceholderText = "ID игры";
-            uiCategoryIdTextBox.Size = new Size(200, 23);
+            uiCategoryIdTextBox.Size = new Size(772, 23);
             uiCategoryIdTextBox.TabIndex = 2;
             // 
             // uiProfileComboBox
@@ -76,7 +77,7 @@
             uiProfileComboBox.IntegralHeight = false;
             uiProfileComboBox.Location = new Point(12, 101);
             uiProfileComboBox.Name = "uiProfileComboBox";
-            uiProfileComboBox.Size = new Size(200, 23);
+            uiProfileComboBox.Size = new Size(772, 23);
             uiProfileComboBox.TabIndex = 3;
             uiProfileComboBox.SelectedIndexChanged += uiProfileComboBox_SelectedIndexChanged;
             // 
@@ -105,7 +106,7 @@
             uiUserLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             uiUserLabel.Location = new Point(12, 13);
             uiUserLabel.Name = "uiUserLabel";
-            uiUserLabel.Size = new Size(200, 15);
+            uiUserLabel.Size = new Size(772, 15);
             uiUserLabel.TabIndex = 6;
             uiUserLabel.Text = "Не авторизован";
             uiUserLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -114,7 +115,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(227, 278);
+            ClientSize = new Size(799, 310);
             Controls.Add(uiUserLabel);
             Controls.Add(uiDeleteProfileButton);
             Controls.Add(uiCreateProfileButton);
@@ -122,6 +123,7 @@
             Controls.Add(uiCategoryIdTextBox);
             Controls.Add(updateButton);
             Controls.Add(uiTitleTextBox);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Твич";
